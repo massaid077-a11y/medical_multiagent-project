@@ -1,0 +1,27 @@
+# Environnements virtuels
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Variables d'environnement sensibles
+.env.local
+
+# LangGraph
+.langgraph_api/
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/
+
+# OS
+.DS_Store
+Thumbs.db

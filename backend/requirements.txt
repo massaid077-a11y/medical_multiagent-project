@@ -1,0 +1,11 @@
+langgraph==1.2.5
+langchain==1.3.9
+langchain-core
+fastapi==0.137.1
+uvicorn[standard]
+pydantic
+mcp==1.28.0
+httpx
+streamlit
+requests
+python-dotenv

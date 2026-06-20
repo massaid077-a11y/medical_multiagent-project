@@ -1,0 +1,28 @@
+{
+  "care_guidelines": [
+    {
+      "keyword": "fievre",
+      "advice": "Surveiller la temperature deux fois par jour, s'hydrater regulierement et se reposer. Consulter si la fievre depasse 39 degres ou persiste plus de 3 jours."
+    },
+    {
+      "keyword": "toux",
+      "advice": "Privilegier le repos vocal, boire des liquides tiedes et eviter les irritants (fumee, poussiere). Consulter si la toux persiste plus de 7 jours ou s'accompagne de sang."
+    },
+    {
+      "keyword": "respiratoire",
+      "advice": "Toute difficulte respiratoire signalee doit etre prise au serieux. Consultation medicale rapide recommandee, en particulier si essoufflement au repos."
+    },
+    {
+      "keyword": "douleur",
+      "advice": "Noter la localisation, l'intensite et la duree de la douleur. Eviter l'auto-medication prolongee et consulter si la douleur s'intensifie."
+    },
+    {
+      "keyword": "fatigue",
+      "advice": "Privilegier le repos, une hydratation suffisante et une alimentation equilibree. Consulter si la fatigue persiste au-dela d'une semaine sans amelioration."
+    },
+    {
+      "keyword": "defaut",
+      "advice": "Repos, hydratation reguliere et surveillance generale de l'evolution des symptomes. Consulter rapidement en cas d'aggravation."
+    }
+  ]
+}
