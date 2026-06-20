@@ -1,188 +1,240 @@
-# Diagnostic Médical — Système multi-agents (LangGraph)
 
-Projet académique de simulation d'un workflow d'orientation clinique
-multi-agents, réalisé avec LangGraph, LangChain, FastAPI, MCP et
-Streamlit.
+# Rapport technique — Simulation d'orientation clinique multi‑agents
 
-> **Avertissement** : ce système est un exercice académique. Il ne
-> constitue pas un dispositif médical et ne fournit pas de
-> diagnostic définitif. Toute synthèse ou recommandation produite
-> reste une orientation clinique préliminaire qui ne remplace pas
-> une consultation médicale.
+**Titre du projet** : Simulation d'orientation clinique multi‑agents
 
----
+**Auteur** : Assaid Mohammed
 
-## 1. Structure du projet
+**Professeur encadrant** : Mohamed Youssfi
 
-```
-project/
-├── backend/
-│   ├── app/
-│   │   ├── graph.py
-│   │   ├── state.py
-│   │   ├── api.py
-│   │   ├── nodes/
-│   │   │   ├── supervisor.py
-│   │   │   ├── diagnostic_agent.py
-│   │   │   ├── physician_review.py
-│   │   │   └── report_agent.py
-│   │   └── tools/
-│   │       ├── patient_tools.py
-│   │       ├── care_tools.py
-│   │       └── mcp_client.py
-│   ├── langgraph.json
-│   ├── requirements.txt
-│   └── .env
-├── mcp_server/
-│   ├── server.py
-│   └── data/
-│       └── care_guidelines.json
-├── frontend/
-│   └── app.py
-└── README.md
-```
+**Niveau** : 4ème année Génie Informatique / IA
+
+**Année universitaire** : 2025-2026
+
+**Institution** : École supérieure de l'ingénierie informatique
 
 ---
 
-## 2. Prérequis
+Résumé (Abstract)
+------------------
+Ce document décrit la conception, l'implémentation et l'utilisation
+d'un prototype académique de système d'orientation clinique basé
+sur un workflow multi‑agents. Le système combine LangGraph pour la
+coordination des agents, FastAPI pour l'API backend, un serveur MCP
+pour l'accès à des recommandations de soins, et Streamlit pour le
+frontend interactif. L'objectif est pédagogique : illustrer les
+patrons d'architecture, les interruptions Human‑in‑the‑Loop et les
+intégrations MCP/LLM, sans vocation clinique.
 
-- Python 3.11 ou supérieur
-- pip
+Mots‑clés: LangGraph, multi‑agents, FastAPI, MCP, Streamlit,
+workflow clinique, simulation.
 
----
+1. Contexte et objectifs
+-------------------------
+Le projet reproduit le scénario d'une consultation structurée en
+quatre étapes : collecte initiale, questions patient (5 questions
+séquentielles), revue médecin (human‑in‑the‑loop) et production du
+rapport final. Le but pédagogique est de montrer comment orchestrer
+plusieurs agents (DiagnosticAgent, PhysicianReview, ReportAgent)
+avec interruptions, persistance d'état et enrichissement par un
+référentiel de bonnes pratiques (MCP).
 
-## 3. Installation
+2. Méthodologie et architecture logicielle
+-----------------------------------------
+2.1 Vue d'ensemble
 
-### 3.1 Créer un environnement virtuel (recommandé)
+- `backend/` : implémente le graphe LangGraph et l'API FastAPI
+  (`app/api.py`). Le graphe est défini via `langgraph.json` et les
+  nœuds sont implémentés dans `backend/app/nodes/`.
+- `mcp_server/` : serveur MCP autonome exposant l'outil
+  `lookup_care_guideline` qui consulte `mcp_server/data/care_guidelines.json`.
+- `frontend/` : interface Streamlit (`app.py`) permettant d'ouvrir
+  une consultation, répondre aux questions, saisir la revue médecin
+  et afficher le rapport final.
+
+2.2 Composants clés
+
+- `DiagnosticAgent` : pose successivement 5 questions au patient
+  (interruption `patient_question`) puis produit une synthèse.
+- `PhysicianReview` : présente la synthèse au médecin; attente
+  d'une saisie humaine (interruption `physician_review`).
+- `ReportAgent` : compile le rapport final structuré et le rend
+  disponible via l'API.
+- `mcp_client.py` / `mcp_server` : communication via MCP pour
+  enrichir les recommandations intermédiaires.
+
+3. Installation et exécution (reproductibilité)
+----------------------------------------------
+Prérequis : Python 3.11+, `pip`.
+
+3.1 Environnement virtuel (recommandé)
 
 ```bash
 python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS / Linux
+source venv/bin/activate
 ```
 
-Activation :
-
-- Windows : `venv\Scripts\activate`
-- macOS / Linux : `source venv/bin/activate`
-
-### 3.2 Installer les dépendances du backend
+3.2 Installer les dépendances
 
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-### 3.3 Installer les dépendances du frontend
+3.3 Lancer les services (développement)
 
-Streamlit et requests sont déjà inclus dans `backend/requirements.txt`
-(installation unique pour tout le projet).
-
----
-
-## 4. Lancement du projet
-
-Le projet nécessite **deux process actifs en parallèle** : l'API
-FastAPI (backend) et l'interface Streamlit (frontend). Le serveur
-MCP est lancé automatiquement par le backend à chaque appel (il n'a
-pas besoin d'être démarré manuellement).
-
-### 4.1 Démarrer l'API FastAPI
-
-Dans un premier terminal, depuis le dossier `backend/` :
+Le prototype demande deux processus : l'API backend et le
+frontend Streamlit. Le serveur MCP peut être lancé manuellement
+si souhaité.
 
 ```bash
+# Terminal 1 — API
 cd backend
 uvicorn app.api:app --reload --port 8000
-```
 
-L'API est alors disponible sur `http://localhost:8000`.
-La documentation interactive (Swagger) est disponible sur
-`http://localhost:8000/docs`.
-
-### 4.2 Démarrer le frontend Streamlit
-
-Dans un second terminal, depuis le dossier `frontend/` :
-
-```bash
+# Terminal 2 — Frontend
 cd frontend
 streamlit run app.py
+
+# (optionnel) Terminal 3 — serveur MCP
+cd mcp_server
+python server.py
 ```
 
-L'interface s'ouvre automatiquement dans le navigateur
-(`http://localhost:8501`).
+L'API est exposée sur `http://localhost:8000` et le frontend
+sur `http://localhost:8501`.
 
----
+4. Protocoles d'expérimentation et cas tests
+-------------------------------------------
+Exemples de scénarios à reproduire pour valider le prototype :
 
-## 5. Test du graphe dans LangGraph Studio
+- Cas 1 — Syndrome respiratoire léger : vérifier que les 5
+  questions sont posées, que la recommandation MCP retourne un
+  conseil adapté, et que la revue médecin permet d'ajouter un
+  traitement avant génération du rapport final.
+- Cas 2 — Signaux d'alerte (red flags) : vérifier que la
+  synthèse attire l'attention du médecin et propose une conduite
+  d'urgence.
+- Cas 3 — Cas bénin : vérification du flux normal et du rapport.
 
-Depuis le dossier `backend/`, avec l'environnement virtuel activé :
+5. Résultats attendus
+---------------------
+Pour chaque exécution :
 
-```bash
-pip install langgraph-cli[inmem]
-langgraph dev
+- 5 questions patient collectées
+- synthèse diagnostique préliminaire
+- recommandation intermédiaire enrichie par le MCP
+- revue humaine validant/complétant la conduite à tenir
+- rapport final structuré disponible via l'API
+
+6. Limitations et considérations éthiques
+----------------------------------------
+Ce prototype est strictement pédagogique. Il ne doit pas être
+utilisé pour des décisions cliniques. Limitations principales :
+
+- absence de validation clinique et d'évaluations de sécurité ;
+- dépendance possible à des modèles LLM externes (si configurés) ;
+- référentiel MCP simplifié et non exhaustif.
+
+7. Reproductibilité et bonnes pratiques
+--------------------------------------
+- Versionner les dépendances (`requirements.txt`).
+- Ne pas exposer de clés privées dans le dépôt ; utilisez un
+  fichier `.env` (non commité) pour `OPENAI_API_KEY` si nécessaire.
+- Reproduire les tests décrits dans la section 4 pour valider
+  l'intégrité du workflow.
+
+8. Conclusion
+-------------
+Le système illustre la coordination d'agents dans un contexte
+clinique simulé, ainsi que l'intégration d'un référentiel via MCP
+et l'interaction human‑in‑the‑loop. Il sert de base pour des
+activités pédagogiques et extensions futures (évaluation, tests
+utilisateurs, enrichissement du référentiel).
+
+Remerciements
+-------------
+Merci aux contributeurs et aux enseignants ayant supervisé ce
+projet. Ce travail est fourni à titre d'exemple académique.
+
+Références
+----------
+- LangGraph — documentation et exemples.
+- FastAPI — Starlette, ASGI et documentations associées.
+- MCP — Model Context Protocol (outil d'extension).
+
+Annexes
+-------
+Structure minimale du dépôt :
+
+```
+backend/
+  app/
+    api.py
+    graph.py
+    state.py
+    nodes/
+    tools/
+  langgraph.json
+  requirements.txt
+frontend/
+  app.py
+mcp_server/
+  server.py
+  data/care_guidelines.json
 ```
 
-LangGraph Studio s'ouvre alors dans le navigateur et permet de :
-
-- visualiser le graphe (`Supervisor → DiagnosticAgent →
-  PhysicianReview → ReportAgent`) ;
-- exécuter le workflow pas à pas ;
-- observer les interruptions Human-in-the-Loop (questions patient
-  et revue médecin) ;
-- inspecter l'état partagé (`MedicalState`) à chaque étape.
-
----
-
-## 6. Utilisation de l'application
-
-1. **Écran 1** : cliquer sur *Démarrer la consultation*.
-2. **Écran 2** : répondre successivement aux 5 questions posées par
-   le Diagnostic Agent.
-3. **Écran 3** : consulter la synthèse clinique préliminaire et la
-   recommandation intermédiaire, puis saisir le traitement ou la
-   conduite à tenir proposée par le médecin traitant.
-4. **Écran 4** : consulter le rapport final structuré.
-
----
-
-## 7. Tester l'API directement (sans frontend)
+Commandes rapides pour tests manuels :
 
 ```bash
+# Obtenir un thread_id
 curl -X POST http://localhost:8000/sessions/start
 
+# Démarrer une consultation
 curl -X POST "http://localhost:8000/consultation/start?thread_id=<ID>"
 
+# Reprendre la consultation (réponse patient / revue)
 curl -X POST http://localhost:8000/consultation/resume \
   -H "Content-Type: application/json" \
-  -d '{"thread_id": "<ID>", "value": "Réponse du patient"}'
+  -d '{"thread_id":"<ID>","value":"Réponse"}'
 
-curl http://localhost:8000/consultation/<ID>
-
+# Obtenir le rapport final
 curl http://localhost:8000/consultation/<ID>/report
 ```
 
----
-
-## 8. Intégration MCP
-
-Le serveur MCP (`mcp_server/server.py`) expose l'outil
-`lookup_care_guideline`, qui consulte un référentiel local
-(`mcp_server/data/care_guidelines.json`) pour enrichir la
-recommandation intermédiaire produite par le Diagnostic Agent. Le
-backend s'y connecte via `backend/app/tools/mcp_client.py`, en
-lançant le serveur MCP comme sous-processus communiquant par
-transport stdio (le serveur n'a donc pas besoin d'être démarré
-séparément).
+Licence
+-------
+Ce dépôt est fourni à des fins académiques. Si vous souhaitez une
+licence explicite (MIT, Apache‑2.0, etc.), indiquez votre choix et
+une licence sera ajoutée.
 
 ---
 
-## 9. Jeux de tests suggérés
+## 10. Déploiement / Notes production
 
-| Cas | Description | Élément attendu |
-|---|---|---|
-| Cas 1 | Syndrome respiratoire simple (toux, fièvre légère) | Recommandation prudence renforcée |
-| Cas 2 | Cas avec red flags (difficulté respiratoire, douleur thoracique) | Recommandation consultation rapide |
-| Cas 3 | Cas bénin (fatigue légère, pas de fièvre) | Recommandation repos/surveillance |
+- **Variables d'environnement** : créez un fichier `.env` dans
+  `backend/` si vous souhaitez configurer des clés ou paramètres
+  (par exemple pour `OPENAI_API_KEY` si vous utilisez des backends
+  LLM externes). Le projet fonctionne en mode local sans clé par
+  défaut pour les exercices académiques.
+- **Processus requis** : en développement, lancez `uvicorn` pour
+  l'API et `streamlit` pour le frontend. Le serveur MCP peut être
+  démarré manuellement via :
 
-Pour chaque scénario, vérifier : les 5 questions posées, la
-génération de la recommandation intermédiaire, la revue médecin, et
-la production du rapport final.
+```bash
+cd mcp_server
+python server.py
+```
+
+  En configuration locale, le backend lance normalement le MCP
+  automatiquement lorsqu'il en a besoin.
+
+## 11. Licence
+
+Ce dépôt est fourni à des fins académiques et d'exemple. Vous pouvez
+réutiliser le code sous réserve des droits d'auteur applicables. Si
+vous souhaitez une licence explicite (MIT, Apache, etc.), indiquez
+laquelle et je peux l'ajouter.
